@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # Backend API Service
+  backend:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+    container_name: bookmark-manager-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    restart: unless-stopped
+    networks:
+      - bookmark-network
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    container_name: bookmark-manager-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8080/api/v1
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - bookmark-network
+
+networks:
+  bookmark-network:
+    driver: bridge

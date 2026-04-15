@@ -1,78 +1,145 @@
-# test-3-bookmark
+# Bookmark Manager
 
-## Overview
+A full-stack web application for saving, organizing, and retrieving web resources through bookmarks with metadata (title, description, tags).
 
-The Bookmark Manager is a full-stack web application that enables users to save, organize, and retrieve web resources through bookmarks with metadata (title, description, tags). The system follows a clean architecture pattern with a Go REST API backend and a React frontend, communicating via HTTP/JSON.
+## 📚 Documentation
 
-**Key Capabilities:**
-- Full CRUD operations for bookmarks
-- Pagination support (20 items per page)
-- Full-text search across title, description, and URL
-- Tag-based filtering with multi-filter support
-- Real-time UI updates without page refresh
-- Health check endpoints for monitoring
+- [Main Documentation](README.md)
+- [Backend Documentation](src/backend/README.md)
+- [Frontend Documentation](src/frontend/README.md)
 
-**System Boundaries:**
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Go 1.22+
+- Node.js 20+
+- Docker & Docker Compose (optional)
+
+### Running Locally
+
+1. **Start the Backend:**
+   ```bash
+   cd src/backend
+   go mod download
+   go run cmd/main.go
+   ```
+   The API will be available at `http://localhost:8080`
+
+2. **Start the Frontend:**
+   ```bash
+   cd src/frontend
+   npm install
+   npm run dev
+   ```
+   The app will be available at `http://localhost:3000`
+
+### Running with Docker
+
+```bash
+docker-compose up --build
 ```
-┌─────────────────┐     HTTP/JSON      ┌─────────────────┐
-│   React Frontend│◄──────────────────►│   Go REST API   │
-│   (src/frontend)│                    │   (src/backend) │
-└─────────────────┘                    └────────┬────────┘
-                                                │
-                                        ┌───────▼───────┐
-                                        │   In-Memory   │
-                                        │    Storage    │
-                                        └───────────────┘
+
+Both services will start:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8080
+
+## 📁 Project Structure
+
+```
+.
+├── src/
+│   ├── backend/          # Go REST API
+│   │   ├── cmd/
+│   │   ├── internal/
+│   │   │   ├── handler/
+│   │   │   ├── service/
+│   │   │   ├── repository/
+│   │   │   ├── model/
+│   │   │   ├── middleware/
+│   │   │   └── server/
+│   │   └── README.md
+│   └── frontend/         # React TypeScript app
+│       └── src/
+│           ├── components/
+│           ├── hooks/
+│           ├── pages/
+│           ├── services/
+│           └── styles/
+├── docker-compose.yml
+├── .env.example
+├── api-collection.json   # Postman collection
+└── README.md
 ```
 
+## 🎯 Features
 
-## Technology Stack
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Create Bookmark | ✅ | Save URLs with title, description, and tags |
+| View Bookmarks | ✅ | Paginated list view with 20 items per page |
+| Edit Bookmark | ✅ | Update existing bookmark details |
+| Delete Bookmark | ✅ | Remove bookmarks with confirmation |
+| Search | ✅ | Full-text search across title, description, URL |
+| Tag Filtering | ✅ | Filter by individual tags |
+| Tag Management | ✅ | Automatic tag counting and display |
+| Responsive UI | ✅ | Mobile-friendly design |
+| Health Checks | ✅ | `/health` endpoint for monitoring |
+
+## 🔌 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/bookmarks` | List all bookmarks (paginated) |
+| GET | `/api/v1/bookmarks/{id}` | Get a specific bookmark |
+| POST | `/api/v1/bookmarks` | Create a new bookmark |
+| PUT | `/api/v1/bookmarks/{id}` | Update a bookmark |
+| DELETE | `/api/v1/bookmarks/{id}` | Delete a bookmark |
+| GET | `/api/v1/bookmarks/search?q=` | Search bookmarks |
+| GET | `/api/v1/bookmarks/tag/{tag}` | Filter by tag |
+| GET | `/api/v1/tags` | Get all tags with counts |
+| GET | `/health` | Health check |
+
+## 🧪 Testing
 
 ### Backend
-
-| Technology | Version | Justification |
-|------------|---------|---------------|
-| Go | 1.21+ | Required by project; excellent performance, built-in HTTP server, strong typing, simple concurrency model ideal for REST APIs |
-| Gorilla Mux | latest | Lightweight, mature routing library with URL pattern matching and middleware support |
-| Go UUID | latest | Standard UUID generation for bookmark IDs |
-| Go Validator | latest | Input validation for URL format and other constraints |
-| In-Memory Storage | N/A | Simplest storage for single-user bookmark manager; no external dependencies; fast operations |
-
-**Why In-Memory Storage?**
-- No persistence requirement specified in user stories
-- Eliminates database setup complexity for MVP
-- Provides instant startup and zero configuration
-- Can be replaced with SQLite/PostgreSQL repository implementation without API changes
+```bash
+cd src/backend
+go test -v ./...
+```
 
 ### Frontend
+```bash
+cd src/frontend
+npm test
+```
 
-| Technology | Version | Justification |
-|------------|---------|---------------|
-| React | 18+ | Industry standard, component-based architecture, virtual DOM for efficient updates |
-| TypeScript | latest | Type safety, better IDE support, catches errors at compile time |
-| React Query | latest | Server state management, built-in caching, pagination, and refetching |
-| Tailwind CSS | latest | Utility-first CSS, rapid UI development, responsive design support |
-| React Hook Form | latest | Performant form handling with validation, minimal re-renders |
-| Axios | latest | Promise-based HTTP client with interceptors for error handling |
+## 📊 Technology Stack
 
-**Why React Query?**
-- Handles server state (bookmarks) separate from client state
-- Built-in pagination, caching, and background refetching
-- Reduces boilerplate for loading/error states
-- Automatic UI updates on mutations
+### Backend
+- **Go 1.22** - High-performance compiled language
+- **Gorilla Mux** - HTTP routing
+- **In-Memory Storage** - Zero-dependency data storage
 
-### Development Tools
+### Frontend
+- **React 18** - UI component library
+- **TypeScript** - Type-safe JavaScript
+- **Tailwind CSS** - Utility-first styling
+- **React Query** - Server state management
+- **React Hook Form** - Form handling
 
-| Tool | Purpose |
-|------|---------|
-| Go Modules | Dependency management |
-| Vite | Fast frontend build tool and dev server |
-| ESLint + Prettier | Code quality and formatting |
-| Go Test | Unit and integration testing |
-| React Testing Library | Component testing |
+## 🤝 Contributing
 
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+MIT License - see LICENSE file for details
 
 ---
 
-This project is managed by the SDLC Pipeline. Implementation tasks are tracked as GitHub/GitLab issues.
-Each issue is solved by an autonomous agent on its own branch with a pull request.
+*This project is managed by the SDLC Pipeline. Implementation tasks are tracked as GitHub/GitLab issues.*

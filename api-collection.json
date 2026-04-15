@@ -1,0 +1,197 @@
+{
+  "info": {
+    "name": "Bookmark Manager API",
+    "description": "Postman collection for Bookmark Manager API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/v1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["health"]
+        },
+        "description": "Check if the API server is running and healthy"
+      },
+      "response": []
+    },
+    {
+      "name": "Bookmarks",
+      "item": [
+        {
+          "name": "Get All Bookmarks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bookmarks?page=1&pageSize=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookmarks"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20",
+                  "description": "Items per page (default: 20)"
+                }
+              ]
+            },
+            "description": "Get all bookmarks with pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Bookmark by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bookmarks/550e8400-e29b-41d4-a716-446655440000",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookmarks", "550e8400-e29b-41d4-a716-446655440000"]
+            },
+            "description": "Get a specific bookmark by its ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Bookmark",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"https://github.com\",\n  \"title\": \"GitHub\",\n  \"description\": \"Where the world builds software\",\n  \"tags\": [\"development\", \"git\", \"code\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookmarks",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookmarks"]
+            },
+            "description": "Create a new bookmark with URL, title, description, and optional tags"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Bookmark",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated GitHub\",\n  \"description\": \"The world's leading software development platform\",\n  \"tags\": [\"development\", \"git\", \"platform\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookmarks/550e8400-e29b-41d4-a716-446655440000",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookmarks", "550e8400-e29b-41d4-a716-446655440000"]
+            },
+            "description": "Update an existing bookmark's title, description, and tags"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Bookmark",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bookmarks/550e8400-e29b-41d4-a716-446655440000",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookmarks", "550e8400-e29b-41d4-a716-446655440000"]
+            },
+            "description": "Delete a bookmark by its ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Search Bookmarks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bookmarks/search?q=github",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookmarks", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "github",
+                  "description": "Search query string"
+                }
+              ]
+            },
+            "description": "Search bookmarks by title, description, or URL"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tags",
+      "item": [
+        {
+          "name": "Get All Tags",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tags",
+              "host": ["{{baseUrl}}"],
+              "path": ["tags"]
+            },
+            "description": "Get all tags with their bookmark counts"
+          },
+          "response": []
+        },
+        {
+          "name": "Filter by Tag",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bookmarks/tag/development",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookmarks", "tag", "development"]
+            },
+            "description": "Get all bookmarks with a specific tag"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
