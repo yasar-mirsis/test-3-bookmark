@@ -6,3 +6,4 @@
 export { Header, HeaderProps } from './Header';
 export { Sidebar, SidebarProps, Tag } from './Sidebar';
 export { Layout, LayoutProps } from './Layout';
+export { BookmarkForm, BookmarkFormProps } from './BookmarkForm';
