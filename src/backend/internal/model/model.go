@@ -1,16 +1,4 @@
 package model
 
-import (
-	"time"
-)
-
-// Bookmark represents a saved web resource with metadata
-type Bookmark struct {
-	ID          string    `json:"id"`
-	URL         string    `json:"url"`
-	Title       string    `json:"title"`
-	Description string    `json:"description,omitempty"`
-	Tags        []string  `json:"tags,omitempty"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-}
+// Model package contains domain entities and data structures for the bookmark manager.
+// All types are defined in bookmark.go to maintain a single source of truth.
