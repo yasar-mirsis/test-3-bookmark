@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"test-3-bookmark/src/backend/internal/handler"
@@ -23,24 +24,35 @@ type Server struct {
 func NewServer(handler *handler.Handler) *Server {
 	router := chi.NewRouter()
 
-	// Apply global middleware
-	router.Use(chiMiddleware.Recoverer)
-	router.Use(chiMiddleware.Logger)
-	router.Use(chiMiddleware.RequestID)
-	router.Use(chiMiddleware.RealIP)
-	router.Use(chiMiddleware.Timeout(60 * time.Second))
+	// Apply custom recovery middleware first (to catch panics from other middleware)
+	router.Use(custommiddleware.RecoveryMiddleware)
 
 	// Apply custom logging middleware
 	router.Use(custommiddleware.LoggingMiddleware)
 
+	// Apply CORS middleware for frontend origins
+	allowedOrigins := []string{"http://localhost:3000", "http://localhost:5173"}
+	router.Use(custommiddleware.CORSMiddleware(allowedOrigins))
+
+	// Apply chi middleware for request ID, real IP, and timeout
+	router.Use(chiMiddleware.RequestID)
+	router.Use(chiMiddleware.RealIP)
+	router.Use(chiMiddleware.Timeout(60 * time.Second))
+
 	// Set up routes
 	setupRoutes(router, handler)
+
+	// Get port from environment variable or default to 8080
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
 	return &Server{
 		router: router,
 		httpServer: &http.Server{
 			Handler:      router,
-			Addr:         ":8080",
+			Addr:         ":" + port,
 			ReadTimeout:  15 * time.Second,
 			WriteTimeout: 15 * time.Second,
 			IdleTimeout:  60 * time.Second,
