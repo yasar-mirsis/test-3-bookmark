@@ -4,12 +4,15 @@ on:
   push:
     branches: [main, development]
   pull_request:
-    branches: [main, development]
+    branches: [main]
 
 jobs:
   build-go:
-    name: Build (go)
+    name: Build (go - src/backend)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/backend
     steps:
       - uses: actions/checkout@v4
 
@@ -30,11 +33,11 @@ jobs:
         run: go build ./...
 
   build-node:
-    name: Build (node - frontend)
+    name: Build (node - src/frontend)
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend
+        working-directory: src/frontend
     steps:
       - uses: actions/checkout@v4
 
