@@ -1,29 +1,32 @@
 /**
  * BookmarkList page component for the Bookmark Manager application.
- * Main page that displays paginated bookmarks as cards with pagination controls.
+ * Main page that displays paginated bookmarks as cards with search, tag filtering, and pagination controls.
  */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Bookmark } from '../types/bookmark';
 import { BookmarkCard } from '../components/BookmarkCard';
 import { Pagination } from '../components/Pagination';
 import { Layout } from '../components/Layout';
-import { Tag } from '../components/Sidebar';
+import { TagSidebar, Tag } from '../components/TagSidebar';
+import { SearchBar } from '../components/SearchBar';
 import { useBookmarks } from '../hooks/useBookmarks';
 
 export interface BookmarkListProps {
   /** List of tags for the sidebar */
   tags?: Tag[];
   /** Currently selected filter tag */
-  selectedTag?: string;
+  selectedTag?: string | null;
   /** Callback when a tag is clicked */
   onTagClick?: (tag: string | null) => void;
   /** Callback when edit button is clicked */
   onEditBookmark?: (bookmark: Bookmark) => void;
   /** Callback when delete button is clicked */
   onDeleteBookmark?: (bookmark: Bookmark) => void;
-  /** Callback for search functionality */
-  onSearch?: (query: string) => void;
+  /** Callback for search functionality (debounced) */
+  onSearchChange?: (query: string) => void;
+  /** Callback when search is submitted */
+  onSearchSubmit?: (query: string) => void;
   /** Current search query */
   searchQuery?: string;
   /** Loading state for tags */
@@ -33,15 +36,16 @@ export interface BookmarkListProps {
 }
 
 /**
- * BookmarkList page component displaying paginated bookmarks.
+ * BookmarkList page component displaying paginated bookmarks with search and tag filtering.
  */
 export const BookmarkList: React.FC<BookmarkListProps> = ({
   tags = [],
-  selectedTag,
+  selectedTag = null,
   onTagClick,
   onEditBookmark,
   onDeleteBookmark,
-  onSearch,
+  onSearchChange,
+  onSearchSubmit,
   searchQuery = '',
   isLoadingTags = false,
   pageSize = 20,
@@ -53,13 +57,12 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
     totalPages,
     loading,
     error,
-    filters,
     setPage,
     setFilters,
     deleteBookmark,
   } = useBookmarks(pageSize);
 
-  // Sync filters with tag selection
+  // Sync filters with tag selection and search query
   React.useEffect(() => {
     setFilters({
       tag: selectedTag || '',
@@ -67,17 +70,35 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
     });
   }, [selectedTag, searchQuery, setFilters]);
 
-  const handlePageChange = (newPage: number) => {
+  const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage);
-  };
+  }, [setPage]);
 
-  const handleEdit = (bookmark: Bookmark) => {
+  const handleTagClick = useCallback((tag: string | null) => {
+    if (onTagClick) {
+      onTagClick(tag);
+    }
+  }, [onTagClick]);
+
+  const handleSearchChange = useCallback((query: string) => {
+    if (onSearchChange) {
+      onSearchChange(query);
+    }
+  }, [onSearchChange]);
+
+  const handleSearchSubmit = useCallback((query: string) => {
+    if (onSearchSubmit) {
+      onSearchSubmit(query);
+    }
+  }, [onSearchSubmit]);
+
+  const handleEdit = useCallback((bookmark: Bookmark) => {
     if (onEditBookmark) {
       onEditBookmark(bookmark);
     }
-  };
+  }, [onEditBookmark]);
 
-  const handleDelete = async (bookmark: Bookmark) => {
+  const handleDelete = useCallback(async (bookmark: Bookmark) => {
     if (onDeleteBookmark) {
       onDeleteBookmark(bookmark);
     } else {
@@ -87,27 +108,74 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
         console.error('Failed to delete bookmark:', err);
       }
     }
+  }, [onDeleteBookmark, deleteBookmark]);
+
+  // Determine empty state message
+  const getEmptyStateMessage = () => {
+    if (selectedTag && searchQuery) {
+      return {
+        title: 'No bookmarks found',
+        description: 'Try adjusting your search or tag filter to find what you\'re looking for.',
+      };
+    }
+    if (selectedTag) {
+      return {
+        title: `No bookmarks with #${selectedTag}`,
+        description: 'Try selecting a different tag or add a new bookmark with this tag.',
+      };
+    }
+    if (searchQuery) {
+      return {
+        title: 'No bookmarks found',
+        description: 'Try a different search term or clear the search to see all bookmarks.',
+      };
+    }
+    return {
+      title: 'No bookmarks yet',
+      description: 'Start by adding your first bookmark to save and organize web resources.',
+    };
   };
 
+  const emptyState = getEmptyStateMessage();
+
   return (
-    <Layout
-      tags={tags}
-      selectedTag={selectedTag}
-      onTagClick={onTagClick}
-      onSearch={onSearch}
-      searchQuery={searchQuery}
-      isLoadingTags={isLoadingTags}
-    >
-      <div className="space-y-6">
-        {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-800">
-            {selectedTag ? `#${selectedTag}` : 'All Bookmarks'}
-          </h2>
-          <span className="text-sm text-gray-600">
-            {total} bookmark{total !== 1 ? 's' : ''}
-          </span>
+    <Layout>
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Sidebar - Tags */}
+        <div className="lg:w-64 flex-shrink-0">
+          <div className="sticky top-6">
+            <TagSidebar
+              tags={tags}
+              selectedTag={selectedTag}
+              onTagClick={handleTagClick}
+              isLoading={isLoadingTags}
+              title="Filter by Tag"
+            />
+          </div>
         </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 min-w-0 space-y-6">
+          {/* Search Bar */}
+          <div className="bg-white shadow-md rounded-lg p-4">
+            <SearchBar
+              initialValue={searchQuery}
+              onSearchChange={handleSearchChange}
+              onSearchSubmit={handleSearchSubmit}
+              placeholder="Search bookmarks by title, description, or URL..."
+              disabled={loading}
+            />
+          </div>
+
+          {/* Page Header */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-800">
+              {selectedTag ? `#${selectedTag}` : 'All Bookmarks'}
+            </h2>
+            <span className="text-sm text-gray-600">
+              {total} bookmark{total !== 1 ? 's' : ''}
+            </span>
+          </div>
 
         {/* Error State */}
         {error && (
@@ -173,18 +241,10 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
                   />
                 </svg>
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                  {selectedTag
-                    ? `No bookmarks with #${selectedTag}`
-                    : searchQuery
-                    ? 'No bookmarks found'
-                    : 'No bookmarks yet'}
+                  {emptyState.title}
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  {selectedTag
-                    ? 'Try selecting a different tag or add a new bookmark with this tag.'
-                    : searchQuery
-                    ? 'Try a different search term or clear the search to see all bookmarks.'
-                    : 'Start by adding your first bookmark to save and organize web resources.'}
+                  {emptyState.description}
                 </p>
                 {!selectedTag && !searchQuery && (
                   <a
@@ -238,6 +298,7 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
             )}
           </>
         )}
+        </div>
       </div>
     </Layout>
   );

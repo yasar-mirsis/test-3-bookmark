@@ -1,27 +1,14 @@
 /**
  * Layout component for the Bookmark Manager application.
- * Provides the main page structure with header, sidebar, and content area.
+ * Provides the main page structure with header and content area.
  */
 
 import React from 'react';
 import { Header } from './Header';
-import { Sidebar, Tag } from './Sidebar';
 
 export interface LayoutProps {
   /** Main content to render in the center area */
   children: React.ReactNode;
-  /** List of tags for the sidebar */
-  tags?: Tag[];
-  /** Currently selected filter tag */
-  selectedTag?: string;
-  /** Callback when a tag is clicked */
-  onTagClick?: (tag: string | null) => void;
-  /** Callback for search functionality */
-  onSearch?: (query: string) => void;
-  /** Current search query */
-  searchQuery?: string;
-  /** Loading state for tags */
-  isLoadingTags?: boolean;
   /** Additional CSS classes for the container */
   className?: string;
 }
@@ -31,34 +18,16 @@ export interface LayoutProps {
  */
 export const Layout: React.FC<LayoutProps> = ({
   children,
-  tags = [],
-  selectedTag,
-  onTagClick,
-  onSearch,
-  searchQuery = '',
-  isLoadingTags = false,
   className = '',
 }) => {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <Header onSearch={onSearch} searchQuery={searchQuery} />
+      <Header />
 
       {/* Main Content Area */}
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Sidebar - Tags */}
-          <div className="lg:w-64 flex-shrink-0">
-            <div className="sticky top-6">
-              <Sidebar
-                tags={tags}
-                selectedTag={selectedTag}
-                onTagClick={onTagClick}
-                isLoading={isLoadingTags}
-              />
-            </div>
-          </div>
-
           {/* Main Content */}
           <main className={`flex-1 min-w-0 ${className}`}>
             {children}
