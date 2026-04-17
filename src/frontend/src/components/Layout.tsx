@@ -4,24 +4,24 @@
  */
 
 import React from 'react';
-import { Header } from './Header';
-import { Sidebar, Tag } from './Sidebar';
+import { Header, HeaderProps } from './Header';
+import { TagSidebar, TagSidebarProps } from './TagSidebar';
 
 export interface LayoutProps {
   /** Main content to render in the center area */
   children: React.ReactNode;
   /** List of tags for the sidebar */
-  tags?: Tag[];
+  tags?: TagSidebarProps['tags'];
   /** Currently selected filter tag */
-  selectedTag?: string;
+  selectedTag?: TagSidebarProps['selectedTag'];
   /** Callback when a tag is clicked */
-  onTagClick?: (tag: string | null) => void;
+  onTagClick?: TagSidebarProps['onTagClick'];
   /** Callback for search functionality */
-  onSearch?: (query: string) => void;
+  onSearch?: HeaderProps['onSearch'];
   /** Current search query */
-  searchQuery?: string;
+  searchQuery?: HeaderProps['searchQuery'];
   /** Loading state for tags */
-  isLoadingTags?: boolean;
+  isLoadingTags?: TagSidebarProps['isLoading'];
   /** Additional CSS classes for the container */
   className?: string;
 }
@@ -42,7 +42,11 @@ export const Layout: React.FC<LayoutProps> = ({
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <Header onSearch={onSearch} searchQuery={searchQuery} />
+      <Header 
+        onSearch={onSearch} 
+        searchQuery={searchQuery} 
+        isLoading={isLoadingTags}
+      />
 
       {/* Main Content Area */}
       <div className="container mx-auto px-4 py-6">
@@ -50,7 +54,7 @@ export const Layout: React.FC<LayoutProps> = ({
           {/* Sidebar - Tags */}
           <div className="lg:w-64 flex-shrink-0">
             <div className="sticky top-6">
-              <Sidebar
+              <TagSidebar
                 tags={tags}
                 selectedTag={selectedTag}
                 onTagClick={onTagClick}

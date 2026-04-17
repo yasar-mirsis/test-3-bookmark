@@ -1,51 +1,40 @@
 /**
  * BookmarkList page component for the Bookmark Manager application.
- * Main page that displays paginated bookmarks as cards with pagination controls.
+ * Main page that displays paginated bookmarks as cards with pagination controls,
+ * search functionality, and tag-based filtering.
  */
 
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { Bookmark } from '../types/bookmark';
 import { BookmarkCard } from '../components/BookmarkCard';
 import { Pagination } from '../components/Pagination';
 import { Layout } from '../components/Layout';
-import { Tag } from '../components/Sidebar';
+import { Tag } from '../components/TagSidebar';
 import { useBookmarks } from '../hooks/useBookmarks';
+import { useTags } from '../hooks/useTags';
 
 export interface BookmarkListProps {
-  /** List of tags for the sidebar */
-  tags?: Tag[];
-  /** Currently selected filter tag */
-  selectedTag?: string;
-  /** Callback when a tag is clicked */
-  onTagClick?: (tag: string | null) => void;
   /** Callback when edit button is clicked */
   onEditBookmark?: (bookmark: Bookmark) => void;
   /** Callback when delete button is clicked */
   onDeleteBookmark?: (bookmark: Bookmark) => void;
-  /** Callback for search functionality */
-  onSearch?: (query: string) => void;
-  /** Current search query */
-  searchQuery?: string;
-  /** Loading state for tags */
-  isLoadingTags?: boolean;
   /** Custom page size (default: 20) */
   pageSize?: number;
 }
 
 /**
- * BookmarkList page component displaying paginated bookmarks.
+ * BookmarkList page component displaying paginated bookmarks with search and filtering.
  */
 export const BookmarkList: React.FC<BookmarkListProps> = ({
-  tags = [],
-  selectedTag,
-  onTagClick,
   onEditBookmark,
   onDeleteBookmark,
-  onSearch,
-  searchQuery = '',
-  isLoadingTags = false,
   pageSize = 20,
 }) => {
+  // Local state for search and tag filtering
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+
+  // Bookmark state with pagination
   const {
     bookmarks,
     total,
@@ -53,13 +42,30 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
     totalPages,
     loading,
     error,
-    filters,
     setPage,
     setFilters,
     deleteBookmark,
   } = useBookmarks(pageSize);
 
-  // Sync filters with tag selection
+  // Tag state - use all bookmarks to calculate tag counts
+  const {
+    tags,
+    loading: loadingTags,
+  } = useTags(bookmarks);
+
+  // Handle search query change (debounced via SearchBar component)
+  const handleSearchChange = useCallback((query: string) => {
+    setSearchQuery(query);
+    // Filters are synced via useEffect below
+  }, []);
+
+  // Handle tag click - toggle filter on/off
+  const handleTagClick = useCallback((tag: string | null) => {
+    setSelectedTag(tag);
+    // Filters are synced via useEffect below
+  }, []);
+
+  // Sync filters with local state changes
   React.useEffect(() => {
     setFilters({
       tag: selectedTag || '',
@@ -67,16 +73,19 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
     });
   }, [selectedTag, searchQuery, setFilters]);
 
+  // Handle page change
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
 
+  // Handle edit bookmark
   const handleEdit = (bookmark: Bookmark) => {
     if (onEditBookmark) {
       onEditBookmark(bookmark);
     }
   };
 
+  // Handle delete bookmark
   const handleDelete = async (bookmark: Bookmark) => {
     if (onDeleteBookmark) {
       onDeleteBookmark(bookmark);
@@ -92,11 +101,11 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
   return (
     <Layout
       tags={tags}
-      selectedTag={selectedTag}
-      onTagClick={onTagClick}
-      onSearch={onSearch}
+      selectedTag={selectedTag || undefined}
+      onTagClick={handleTagClick}
+      onSearch={handleSearchChange}
       searchQuery={searchQuery}
-      isLoadingTags={isLoadingTags}
+      isLoadingTags={loadingTags}
     >
       <div className="space-y-6">
         {/* Page Header */}
@@ -146,9 +155,7 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
             {[...Array(6)].map((_, index) => (
               <BookmarkCard
                 key={index}
-                bookmark={
-                  {} as Bookmark
-                }
+                bookmark={{} as Bookmark}
                 isLoading={true}
               />
             ))}
